@@ -1,7 +1,0 @@
-Design a modern open-source software logo for "Codex Memory Skill".
-Create a clean geometric symbol that combines three ideas: local memory, routing, and a coding terminal.
-Use a minimal icon mark made from stacked nodes, a memory chip or archive block, and a subtle terminal angle bracket motif.
-Style: flat vector-like, crisp edges, high contrast, premium technical aesthetic, no mockup, no 3D, no mascot, no extra text.
-Palette: deep charcoal background with cyan, blue, and teal accents.
-The result should feel like a serious GitHub developer tool, not a gaming brand.
-Center composition, square canvas, clean negative space, sharp silhouette, export-ready logo.
