@@ -64,6 +64,8 @@ tests/
   test_smoke.py              # Smoke tests
 ```
 
+Note: `skills/project-memory-loop/scripts/` intentionally mirrors the core runtime files used by bootstrap. Keep the root scripts and the bundled skill scripts in sync when changing internal behavior.
+
 ## Quick Start
 
 ```bash

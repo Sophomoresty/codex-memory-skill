@@ -61,6 +61,8 @@ tests/
   test_smoke.py              # 冒烟测试
 ```
 
+说明: `skills/project-memory-loop/scripts/` 有意保留了一份 bootstrap 所需的镜像脚本. 如果修改核心运行逻辑, 需要同步 root scripts 和 skill bundle 内的 scripts.
+
 ## 快速开始
 
 ```bash
