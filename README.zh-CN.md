@@ -150,7 +150,7 @@ codex-memo d
 
 - **本地优先**: 路由和能力检索完全在本地完成.
 - **Skill-native**: 记忆生命周期定义在可移植的 skill bundle 中, 不硬编码在 CLI 里.
-- **可测试**: 公共回归测试, 内置 benchmark fixture, 以及来自源系统的路由基线 (130/130 成功, top-1 100%, p50 445 ms).
+- **可测试**: 公共回归测试, 内置 benchmark fixture, 以及独立记录的源系统路由基线 (130/130 成功, top-1 100%, p50 445 ms).
 
 ## 验证结果
 
@@ -160,7 +160,7 @@ codex-memo d
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-结果: **7/7 通过**.
+结果: **8/8 通过**.
 
 原系统本地基线:
 
@@ -168,6 +168,8 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 |---|---|
 | 路由 | 130/130 成功, top-1 100%, p50 445 ms |
 | 能力检索 | 64/64 成功, p50 139 ms |
+
+这个源系统基线是历史本地实测记录. 当前仓库可复现的公开回放以如下内置 fixture benchmark 为准.
 
 基准回放:
 

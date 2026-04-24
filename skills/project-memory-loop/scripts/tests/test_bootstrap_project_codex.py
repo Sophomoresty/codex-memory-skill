@@ -36,6 +36,9 @@ class BootstrapProjectCodexTests(unittest.TestCase):
             self.assertTrue((repo_root / ".codex" / "scripts" / "memory_tool.py").exists())
             self.assertTrue((repo_root / ".codex" / "scripts" / "build_asset_index.py").exists())
             self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "task_status.py").exists())
+            self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "memory_viewer_governance.py").exists())
+            self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "memory_viewer_route.py").exists())
+            self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "memory_viewer_snapshot.py").exists())
             self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "procedural_candidates.py").exists())
             self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "runtime_checkpoint.py").exists())
             self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "session_archive.py").exists())
@@ -43,7 +46,7 @@ class BootstrapProjectCodexTests(unittest.TestCase):
             self.assertTrue((repo_root / ".codex" / "scripts" / "lib" / "verifier_sidecar.py").exists())
             self.assertTrue((repo_root / ".codex" / "cache" / "asset-index.json").exists())
             self.assertTrue((repo_root / ".codex" / "memory" / "context.md").exists())
-            self.assertEqual(result["asset_index"]["counts"]["scripts"], 9)
+            self.assertEqual(result["asset_index"]["counts"]["scripts"], 21)
 
     def test_bootstrap_project_codex_updates_existing_agents_without_overwriting_body(self) -> None:
         module = load_module()

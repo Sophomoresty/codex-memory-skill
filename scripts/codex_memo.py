@@ -488,9 +488,9 @@ def should_apply_semantic_rerank(
             return True, "governance_intent_query"
         if mixed_language:
             return True, "mixed_language_query"
-        if abstract_intent:
-            return True, "abstract_intent_query"
         if not second_hit or float(top_hit.get("score", 0.0)) <= 0:
+            if abstract_intent:
+                return True, "abstract_intent_query"
             return False, "high_confidence_runbook_hit"
         if second_hit and second_hit.get("kind") == "asset" and second_hit.get("asset_type") in {"session", "archived_session"}:
             return False, "high_confidence_runbook_hit"
@@ -498,18 +498,21 @@ def should_apply_semantic_rerank(
             ratio = float(second_hit.get("score", 0.0)) / float(top_hit.get("score", 0.0))
         else:
             ratio = 0.0
-        if ratio < SEMANTIC_AMBIGUITY_RATIO:
-            return False, "high_confidence_runbook_hit"
+        if ratio >= SEMANTIC_AMBIGUITY_RATIO:
+            return True, "lexical_gap_ambiguous"
+        if abstract_intent:
+            return True, "abstract_intent_query"
+        return False, "high_confidence_runbook_hit"
     if mixed_language:
         return True, "mixed_language_query"
-    if abstract_intent:
-        return True, "abstract_intent_query"
     if governance_intent:
         return True, "governance_intent_query"
     if top_hit and second_hit and float(top_hit.get("score", 0.0)) > 0:
         ratio = float(second_hit.get("score", 0.0)) / float(top_hit.get("score", 0.0))
         if ratio >= SEMANTIC_AMBIGUITY_RATIO:
             return True, "lexical_gap_ambiguous"
+    if abstract_intent:
+        return True, "abstract_intent_query"
     if semantic_top_path and semantic_top_path != lexical_top_path:
         return True, "semantic_conflict"
     if execution_gate.get("state") != "hit":
@@ -1294,7 +1297,7 @@ def command_doctor(repo_root: Path, home_root: Path) -> dict[str, Any]:
         "project_memory_exists": project_memory_exists(repo_root),
         "home_memory_exists": home_memory_exists(home_root),
         "home_same_as_project": repo_root == home_root,
-        "commands": ["d", "ov", "b", "g", "r", "i", "sx", "si", "f", "a", "m", "k", "p", "s", "c", "n", "v"],
+        "commands": ["d", "ov", "b", "g", "r", "i", "sx", "si", "f", "a", "q", "l4", "m", "k", "lp", "p", "u", "x", "s", "c", "n", "v"],
         "aliases": {
             "d": ["doctor"],
             "ov": ["overview"],
@@ -1305,10 +1308,15 @@ def command_doctor(repo_root: Path, home_root: Path) -> dict[str, Any]:
             "sx": ["semantic-index"],
             "si": ["semantic-inspect"],
             "f": ["flush"],
-            "a": ["asset", "assets"],
+            "a": ["asset", "assets", "sk", "skills"],
+            "q": ["cap", "capability"],
+            "l4": ["archive-session", "replay-session"],
             "m": ["maintain"],
             "k": ["checkpoint"],
+            "lp": ["promote", "promotion"],
             "p": ["candidate", "propose"],
+            "u": ["update"],
+            "x": ["delete", "remove"],
             "s": ["sync", "sync-registry"],
             "c": ["check", "hygiene"],
             "n": ["new", "scaffold"],

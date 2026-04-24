@@ -124,7 +124,7 @@ Key properties:
 
 - **Local-first**: route and capability search run entirely on your machine.
 - **Skill-native**: the memory lifecycle is defined in a portable skill bundle, not hardcoded in the CLI.
-- **Testable**: a public regression suite, a bundled benchmark fixture, and a route baseline from the source system (130/130 success, top-1 100%, p50 445 ms).
+- **Testable**: a public regression suite, a bundled benchmark fixture, and a separately recorded route baseline from the source system (130/130 success, top-1 100%, p50 445 ms).
 
 ## Validation
 
@@ -134,7 +134,7 @@ Public test suite (run in this repo):
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Result: **7/7 passed**.
+Result: **8/8 passed**.
 
 Baseline from the source system:
 
@@ -142,6 +142,8 @@ Baseline from the source system:
 |---|---|
 | Route | 130/130 success, top-1 100%, p50 445 ms |
 | Capability search | 64/64 success, p50 139 ms |
+
+This source-system baseline is a historical local measurement. The reproducible public replay for this repository is the bundled fixture benchmark below.
 
 Benchmark replay:
 

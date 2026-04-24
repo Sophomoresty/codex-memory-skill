@@ -502,6 +502,9 @@ class CodexMemoTests(unittest.TestCase):
             self.assertEqual(payload["command_path"], str(COMMAND_PATH))
             self.assertTrue(payload["project_memory_exists"])
             self.assertTrue(payload["home_memory_exists"])
+            self.assertIn("x", payload["commands"])
+            self.assertEqual(payload["aliases"]["x"], ["delete", "remove"])
+            self.assertEqual(payload["aliases"]["a"], ["asset", "assets", "sk", "skills"])
 
     def test_long_aliases_are_compatible(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -547,6 +550,9 @@ class CodexMemoTests(unittest.TestCase):
             "promotion": "lp",
             "candidate": "p",
             "propose": "p",
+            "update": "u",
+            "delete": "x",
+            "remove": "x",
             "sync": "s",
             "sync-registry": "s",
             "check": "c",

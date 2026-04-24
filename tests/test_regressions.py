@@ -19,6 +19,28 @@ from llm_semantic_client import SemanticLLMClient
 
 
 class CodexMemoryRegressionTests(unittest.TestCase):
+    def test_benchmark_fixture_contains_all_expected_paths(self) -> None:
+        cases_path = REPO_ROOT / "examples" / "benchmark-cases.json"
+        fixture_root = REPO_ROOT / "examples" / "benchmark-fixture"
+        payload = json.loads(cases_path.read_text(encoding="utf-8"))
+        cases = payload.get("cases", payload)
+        expected_paths: set[str] = set()
+        for case in cases:
+            value = str(case.get("expected_top1", "")).strip()
+            if value:
+                expected_paths.add(value)
+            for value in case.get("expected_top3", []):
+                value = str(value).strip()
+                if value:
+                    expected_paths.add(value)
+            for item in case.get("expected_any", []):
+                value = str(item.get("path", "")).strip()
+                if value:
+                    expected_paths.add(value)
+
+        missing = sorted(path for path in expected_paths if not (fixture_root / path).exists())
+        self.assertEqual(missing, [])
+
     def test_rerank_route_uses_local_fallback_without_missing_method(self) -> None:
         client = SemanticLLMClient(REPO_ROOT, force_fake=True)
         payload = client.rerank_route(
