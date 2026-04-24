@@ -54,7 +54,7 @@ Codex Memory Skill 是一个本地 CLI (`codex-memo`) 和可复用 skill bundle 
 | Runbook | 可重复执行的流程笔记, 是 Agent 路由的首要命中目标. |
 | Skill bundle | `skills/project-memory-loop/`, 一套可移植的脚本, 规则和工作流, 定义完整的记忆生命周期. |
 | 资产索引 (Asset index) | JSON 文件 (`.codex/cache/asset-index.json`), 列出仓库中的 skill, script, 可执行文件, 会话和 insight 指针. |
-| 检查点 (Checkpoint) | 单任务的工作记忆: 关键事实, 不变量, 已验证步骤, 检索轨迹. 存放在 `.codex/checkpoints/`. |
+| 检查点 (Checkpoint) | 单任务的工作记忆: 关键事实, 不变量, 已验证步骤, 检索轨迹. 持久化到 SQLite 存储 `.codex/cache/memory-state.db`. |
 | 提升 (Promotion) | 从检查点提取的长期知识条目, 经验证后成为正式记忆笔记. |
 | L4 归档 (L4 archive) | 已归档的会话文件, 支持按查询回放. 存放在 `.codex/archived_sessions/`. |
 

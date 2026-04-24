@@ -28,7 +28,7 @@ It solves one problem: when a new agent thread starts work on a repo, it should 
 | Runbook | A memory note with repeatable steps. The primary executable unit for agent routing. |
 | Skill bundle | `skills/project-memory-loop/` -- a portable set of scripts, rules, and workflows that defines the full memory lifecycle. |
 | Asset index | A JSON file (`.codex/cache/asset-index.json`) listing skills, scripts, executables, sessions, and insight pointers in the repo. |
-| Checkpoint | Working memory for one task: key facts, invariants, verified steps, retrieval traces. Lives under `.codex/checkpoints/`. |
+| Checkpoint | Working memory for one task: key facts, invariants, verified steps, retrieval traces. Persisted in the SQLite store at `.codex/cache/memory-state.db`. |
 | Promotion | A long-term knowledge entry derived from a checkpoint. Becomes a canonical memory note after validation. |
 | L4 archive | Archived session files, replayable by query. Stored under `.codex/archived_sessions/`. |
 

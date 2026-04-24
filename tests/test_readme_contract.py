@@ -43,6 +43,7 @@ class ReadmeContractTests(unittest.TestCase):
             "Checkpoint",
             "Promotion",
             "L4 archive",
+            ".codex/cache/memory-state.db",
         ]:
             self.assertIn(needle, text)
 
@@ -76,6 +77,7 @@ class ReadmeContractTests(unittest.TestCase):
             "检查点 (Checkpoint)",
             "提升 (Promotion)",
             "L4 归档 (L4 archive)",
+            ".codex/cache/memory-state.db",
         ]:
             self.assertIn(needle, text)
 
