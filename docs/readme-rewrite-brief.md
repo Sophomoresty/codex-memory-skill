@@ -13,6 +13,19 @@
 - 少自夸
 - 多证据
 
+## Fixed Paths
+
+这套路径对当前仓库固定, 后续同类仓库默认也沿用:
+
+- 英文 README: `README.md`
+- 中文 README: `README.zh-CN.md`
+- README 需求包: `docs/readme-rewrite-brief.md`
+- logo: `docs/images/logo.png`
+- social card: `docs/images/social-card.png`
+- 品牌提示词: `docs/branding-prompts.md`
+
+后续建立新仓库时, 默认先创建 `docs/readme-rewrite-brief.md`, 再让 `ccglm` 基于该 brief 直接写 `README.md` 与 `README.zh-CN.md`.
+
 ## Current README Problems
 
 当前 README 的主要问题不是事实错误, 而是文风和信息组织方式带来的 “AI 味”.
