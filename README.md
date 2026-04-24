@@ -6,72 +6,39 @@
 
 <h1 align="center">Codex Memory Skill</h1>
 
-<p align="center">
-  Local-first, skill-native, testable memory workflow for coding agents.
-</p>
+<p align="center">Local-first memory workflow and CLI for coding agents.</p>
 
 <p align="center">
   <img src="docs/images/social-card.png" alt="Codex Memory Skill social card" width="720" />
 </p>
 
-## Why
+## What It Is
 
-Code agents become more useful when project knowledge is stored as something searchable, routable, and benchmarkable instead of disappearing into chat history.
+Codex Memory Skill is a CLI (`codex-memo`) plus a reusable skill bundle (`skills/project-memory-loop/`) that gives coding agents structured, searchable, testable project memory.
 
-Codex Memory Skill packages that workflow into a local CLI plus a reusable skill bundle:
+It solves one problem: when a new agent thread starts work on a repo, it should not start from zero. Project knowledge -- runbooks, decisions, failure patterns, proven workflows -- should be indexable, routable, and verifiable, not buried in chat history.
 
-- local route and capability search
-- project memory bootstrap
-- asset index generation
-- optional semantic rerank
-- checkpoint and promotion flow
-- L4 session archive and replay
-- benchmark and hygiene tooling
+**Who it is for:** developers working with coding agents (Codex, Claude Code, or similar) who want agent memory to survive across threads, sessions, and projects.
 
-The core workflow runs locally. No hosted API is required for route or capability search.
+**Core objects and their relationships:**
 
-## Features
+| Object | Role |
+|---|---|
+| Memory note | A Markdown file with structured frontmatter. The unit of project knowledge. Types: runbook, decision, pattern, postmortem, context. |
+| Runbook | A memory note with repeatable steps. The primary executable unit for agent routing. |
+| Skill bundle | `skills/project-memory-loop/` -- a portable set of scripts, rules, and workflows that defines the full memory lifecycle. |
+| Asset index | A JSON file (`.codex/cache/asset-index.json`) listing skills, scripts, executables, sessions, and insight pointers in the repo. |
+| Checkpoint | Working memory for one task: key facts, invariants, verified steps, retrieval traces. Lives under `.codex/checkpoints/`. |
+| Promotion | A long-term knowledge entry derived from a checkpoint. Becomes a canonical memory note after validation. |
+| L4 archive | Archived session files, replayable by query. Stored under `.codex/archived_sessions/`. |
 
-- **Route queries locally** with `codex-memo r --task "..."`
-- **Search capabilities locally** with `codex-memo q --task "..."`
-- **Bootstrap a project memory layer** with `codex-memo b`
-- **Build an asset index** with `codex-memo a`
-- **Run hygiene checks** with `codex-memo c`
-- **Replay benchmark cases** with `scripts/memory_benchmark.py`
-- **Enable optional semantic extras** with `numpy` + `sentence-transformers`
-- **Keep the workflow testable** with built-in smoke tests
-
-## Repository Layout
-
-```text
-bin/
-  codex-memo                 # CLI entry point
-
-scripts/
-  codex_memo.py              # CLI dispatch
-  memory_tool.py             # Core memory operations
-  build_asset_index.py       # Asset index builder
-  memory_benchmark.py        # Benchmark runner
-  lib/                       # Shared internals
-
-skills/
-  project-memory-loop/       # Reusable skill bundle
-
-examples/
-  benchmark-cases.json       # Benchmark cases
-
-tests/
-  test_smoke.py              # Smoke tests
-```
-
-Note: `skills/project-memory-loop/scripts/` intentionally mirrors the core runtime files used by bootstrap. Keep the root scripts and the bundled skill scripts in sync when changing internal behavior.
+All core operations (route, capability search, asset index, hygiene, checkpoint, promotion, archive) run locally. No hosted API is required.
 
 ## Quick Start
 
 ```bash
 git clone <repo-url> codex-memory-skill
 cd codex-memory-skill
-
 chmod +x bin/codex-memo
 ./bin/codex-memo --help
 ```
@@ -83,43 +50,117 @@ cd /path/to/your-project
 /path/to/codex-memory-skill/bin/codex-memo b
 ```
 
+This creates `.codex/memory/` with runbook, decision, pattern, and postmortem directories, plus a seeded governance runbook.
+
 ## Core Commands
 
 ```bash
-# Route a task to the best matching memory / skill
+# Get an onboarding bundle for the current repo
+codex-memo ov
+
+# Route a task to the best matching runbook or memory note
 codex-memo r --task "restore previous chat history"
 
-# Search local capabilities
+# Search local capabilities (skills, scripts, runbooks, insights)
 codex-memo q --task "working checkpoint"
 
-# Build the local asset index
+# Build the asset index
 codex-memo a
+
+# Create a new memory note
+codex-memo n --type runbook --slug my-runbook --title "My Runbook"
+
+# Record working checkpoint state
+codex-memo k --task "restore previous chat history"
+
+# Create a long-term promotion from a checkpoint
+codex-memo lp --task "restore previous chat history" --title "Thread Recovery" --summary "..." --doc-type runbook
+
+# Archive or replay L4 sessions
+codex-memo l4 --closeout
+codex-memo l4 --query "thread recovery"
+
+# Run the full governance maintenance loop
+codex-memo m
 
 # Run hygiene checks
 codex-memo c
 
-# Replay the benchmark suite
-python3 scripts/memory_benchmark.py --repo-root . --cases examples/benchmark-cases.json
+# Build the semantic retrieval cache (optional)
+codex-memo sx
+
+# Diagnose setup issues
+codex-memo d
 ```
+
+## Why It Is Different
+
+| What others do | What Codex Memory Skill does |
+|---|---|
+| Store memory as chat history or implicit context | Store memory as structured Markdown notes with typed frontmatter |
+| Rely on vector similarity alone | Use lexical routing with IDF weighting, optional semantic rerank, and execution gates |
+| Require a hosted API or cloud service | Run all core operations locally with no external dependencies |
+| No built-in validation | Ship smoke tests and a benchmark suite with baseline numbers |
+| Memory is opaque | Memory is files you can read, edit, version-control, and delete |
+| No lifecycle governance | Include hygiene checks, stale-note detection, canonical dedup, and decision retirement |
+
+Key properties:
+
+- **Local-first**: route and capability search run entirely on your machine.
+- **Skill-native**: the memory lifecycle is defined in a portable skill bundle, not hardcoded in the CLI.
+- **Testable**: 3 smoke tests, a benchmark suite, and a route baseline (130/130 success, top-1 100%, p50 445 ms).
 
 ## Validation
 
-Smoke tests in this packaged repository:
+Smoke tests (run in this repo):
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Current result:
+Result: **3/3 passed**.
 
-- **3 / 3 smoke tests passed**
-
-Local baseline from the source system:
+Baseline from the source system:
 
 | Operation | Result |
 |---|---|
-| Route | 130 / 130 success, top-1 100%, p50 445 ms |
-| Capability search | 64 / 64 success, p50 139 ms |
+| Route | 130/130 success, top-1 100%, p50 445 ms |
+| Capability search | 64/64 success, p50 139 ms |
+
+Benchmark replay:
+
+```bash
+python3 scripts/memory_benchmark.py --repo-root . --cases examples/benchmark-cases.json
+```
+
+## Repository Layout
+
+```text
+bin/
+  codex-memo                 CLI entry point
+
+scripts/
+  codex_memo.py              CLI dispatch and route logic
+  memory_tool.py             Core memory operations
+  build_asset_index.py       Asset index builder
+  memory_benchmark.py        Benchmark runner
+  lib/                       Shared internals (query_intel, semantic_index, ...)
+
+skills/
+  project-memory-loop/       Reusable skill bundle
+    scripts/                 Mirrors core runtime scripts
+    workflows/               Lifecycle workflows
+    rules/                   Boundary rules
+    references/              Documentation templates
+
+examples/
+  benchmark-cases.json       Benchmark cases
+
+tests/
+  test_smoke.py              Smoke tests
+```
+
+`skills/project-memory-loop/scripts/` intentionally mirrors the root scripts. Keep them in sync when changing internal behavior.
 
 ## Optional Semantic Extras
 
@@ -129,22 +170,27 @@ For stronger fuzzy matching:
 pip install numpy sentence-transformers
 ```
 
-These dependencies are optional. The core workflow still runs without them.
+Then build the semantic cache:
+
+```bash
+codex-memo sx
+```
+
+These dependencies are optional. Route and capability search work without them.
 
 ## Scope
 
-Codex Memory Skill is strongest as a **local-first memory workflow**:
+Codex Memory Skill is:
 
-- local execution
-- transparent files and scripts
-- benchmarkable retrieval
-- skill-native integration
+- a local CLI for project memory routing, indexing, and governance
+- a portable skill bundle for the full memory lifecycle
+- a testable workflow with built-in smoke tests and benchmarks
 
-It is not a hosted memory platform, not a multi-tenant SaaS product, and not a general-purpose vector database.
+It is not:
 
-## Roadmap
+- a hosted memory platform or SaaS
+- a multi-tenant service
+- a general-purpose vector database
+- a replacement for your project's own documentation
 
-- cleaner install story
-- more public examples
-- expanded benchmark coverage
-- more portable packaging around the skill bundle
+Requires Python >= 3.11. No required dependencies for core operation.
