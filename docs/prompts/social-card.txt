@@ -1,0 +1,8 @@
+Create a GitHub-style open-source project social card for "Codex Memory Skill".
+Theme: local-first memory workflow for coding agents.
+Show a clean technical composition with a central layered diagram: CLI -> route -> asset index -> memory graph.
+Include abstract visual cues for repository files, structured memory notes, routing lines, and local execution.
+Style: elegant developer tooling branding, paper-figure clarity, dark neutral background, cyan, blue, and teal highlight colors, subtle glow, precise layout, premium but restrained.
+Make the image look like a serious hero graphic for a top-tier GitHub project README.
+No screenshots of real UIs, no human characters, no excessive text, no clutter.
+16:9 landscape composition with a strong central focal point and clear visual hierarchy.

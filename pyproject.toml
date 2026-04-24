@@ -1,0 +1,16 @@
+[project]
+name = "codex-memory-skill"
+version = "0.1.0"
+description = "Local-first memory skill and CLI for Codex-style project workflows."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+semantic = [
+  "numpy>=1.26",
+  "sentence-transformers>=3.0.0",
+]
+
+[tool.ruff]
+line-length = 120

@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "description": "Benchmark cases for semantic memory route correctness. expected_top1 is the target after semantic route lands. expected_top3 is the acceptable recall set. expected_any keeps backward compatibility with the current benchmark tool.",
+  "cases": [
+    {
+      "id": "case-thread-recovery-en",
+      "category": "abstract_intent",
+      "language": "en",
+      "mode": "semantic_required",
+      "query": "restore previous chat history",
+      "expected_top1": "memory/runbooks/codex-app-update-thread-and-config-recovery.md",
+      "expected_top3": [
+        "memory/runbooks/codex-app-update-thread-and-config-recovery.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/codex-app-update-thread-and-config-recovery.md"
+        }
+      ],
+      "notes": "用于防止误命中 codex-app-new-chat-fails-after-update-realtime-conversation-mismatch."
+    },
+    {
+      "id": "case-ga-memory-system-zh",
+      "category": "mixed_intent",
+      "language": "zh",
+      "mode": "semantic_required",
+      "query": "GA 的记忆系统, 记忆检索, 语义召回, LLM 参与检索",
+      "expected_top1": "memory/runbooks/genericagent-memory-retrieval-and-review-entry.md",
+      "expected_top3": [
+        "memory/runbooks/genericagent-memory-retrieval-and-review-entry.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/genericagent-memory-retrieval-and-review-entry.md"
+        }
+      ],
+      "notes": "验证 GA memory / retrieval 薄入口, 防止 task-doc 或 session 抢占抽象 query."
+    },
+    {
+      "id": "case-memory-promotion-zh",
+      "category": "workflow_intent",
+      "language": "zh",
+      "mode": "semantic_required",
+      "query": "记忆升级成 skill, 记忆收敛, thin entry",
+      "expected_top1": "memory/runbooks/memory-to-skill-promotion-and-consolidation.md",
+      "expected_top3": [
+        "memory/runbooks/memory-to-skill-promotion-and-consolidation.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/memory-to-skill-promotion-and-consolidation.md"
+        }
+      ],
+      "notes": "验证 memory->skill promotion 问题族."
+    },
+    {
+      "id": "case-session-recall-strategy-zh",
+      "category": "routing_strategy",
+      "language": "zh",
+      "mode": "lexical_or_semantic",
+      "query": "收紧 session recall 策略并降低索引负担",
+      "expected_top1": "memory/runbooks/session-recall-window-and-archive-priority.md",
+      "expected_top3": [
+        "memory/runbooks/session-recall-window-and-archive-priority.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/session-recall-window-and-archive-priority.md"
+        }
+      ],
+      "notes": "验证 session recall 窗口与 archived 优先级问题族."
+    },
+    {
+      "id": "case-memory-governance-entry-mixed",
+      "category": "governance_routing",
+      "language": "mixed",
+      "mode": "semantic_required",
+      "query": "记忆治理入口 session routing aliases keywords",
+      "expected_top1": "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md",
+      "expected_top3": [
+        "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md"
+        }
+      ],
+      "notes": "验证治理类混合 query 不会被 session recall runbook 抢占 execution_gate."
+    },
+    {
+      "id": "case-memory-governance-entry-en",
+      "category": "governance_routing",
+      "language": "en",
+      "mode": "semantic_required",
+      "query": "memory governance hygiene routing aliases keywords",
+      "expected_top1": "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md",
+      "expected_top3": [
+        "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md"
+        }
+      ],
+      "notes": "验证英文治理 query 命中治理入口 runbook."
+    },
+    {
+      "id": "case-memory-governance-cleanup-zh",
+      "category": "governance_routing",
+      "language": "zh",
+      "mode": "semantic_required",
+      "query": "扫描清理 session 与重复 memory, 补 aliases keywords routing",
+      "expected_top1": "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md",
+      "expected_top3": [
+        "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/memory-hygiene-scan-cleanup-and-enrichment.md"
+        }
+      ],
+      "notes": "验证治理入口对 session cleanup + aliases/keywords 补齐 query 的覆盖."
+    },
+    {
+      "id": "case-wsl-pwsh-dollar-expansion",
+      "category": "debugging_intent",
+      "language": "zh",
+      "mode": "lexical_or_semantic",
+      "query": "pwsh $_.LocalPort 被 zsh 改坏, 0.LocalPort is not recognized",
+      "expected_top1": "memory/runbooks/codex-wsl-windows-shell-utf8-bridge-and-absolute-path-bypass.md",
+      "expected_top3": [
+        "memory/runbooks/codex-wsl-windows-shell-utf8-bridge-and-absolute-path-bypass.md",
+        "memory/runbooks/windows-toolchain-paths-and-wsl-call-baseline.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/codex-wsl-windows-shell-utf8-bridge-and-absolute-path-bypass.md"
+        },
+        {
+          "path": "memory/runbooks/windows-toolchain-paths-and-wsl-call-baseline.md"
+        }
+      ],
+      "notes": "验证 WSL -> pwsh 引号与 $ 展开边界."
+    },
+    {
+      "id": "case-ccglm-landing-page-routing-zh",
+      "category": "workflow_intent",
+      "language": "mixed",
+      "mode": "semantic_required",
+      "query": "给我做一个 landing page",
+      "expected_top1": "memory/runbooks/ccglm-long-task-review-loop.md",
+      "expected_top3": [
+        "memory/runbooks/ccglm-long-task-review-loop.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/ccglm-long-task-review-loop.md"
+        }
+      ],
+      "notes": "验证前端页面与 landing page 默认回到 ccglm, 防止被通用 frontend skill 抢占 execution_gate."
+    },
+    {
+      "id": "case-ccglm-design-brief-routing-zh",
+      "category": "workflow_intent",
+      "language": "mixed",
+      "mode": "semantic_required",
+      "query": "给我这个需求的 design brief",
+      "expected_top1": "memory/runbooks/ccglm-long-task-review-loop.md",
+      "expected_top3": [
+        "memory/runbooks/ccglm-long-task-review-loop.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/ccglm-long-task-review-loop.md"
+        }
+      ],
+      "notes": "验证 design brief 默认回到 ccglm, 防止被普通 design skill 抢占."
+    },
+    {
+      "id": "case-ccglm-final-report-routing-zh",
+      "category": "workflow_intent",
+      "language": "zh",
+      "mode": "semantic_required",
+      "query": "任务做完后给我最终汇报, 不要直接展示 Codex 原始输出",
+      "expected_top1": "memory/runbooks/ccglm-long-task-review-loop.md",
+      "expected_top3": [
+        "memory/runbooks/ccglm-long-task-review-loop.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/ccglm-long-task-review-loop.md"
+        }
+      ],
+      "notes": "验证最终汇报默认回到 ccglm, 防止被 Codex 相关 runbook 语义抢占."
+    },
+    {
+      "id": "case-ccglm-final-code-review-routing-en",
+      "category": "workflow_intent",
+      "language": "en",
+      "mode": "semantic_required",
+      "query": "help me do a final code review",
+      "expected_top1": "memory/runbooks/ccglm-long-task-review-loop.md",
+      "expected_top3": [
+        "memory/runbooks/ccglm-long-task-review-loop.md",
+        "memory/runbooks/default-code-review-stack-main-subagent-ccglm.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/ccglm-long-task-review-loop.md"
+        }
+      ],
+      "notes": "验证 final code review 仍以 ccglm review loop 为主入口, 同时允许默认 code review 栈作为次级候选."
+    },
+    {
+      "id": "case-thread-recovery-zh",
+      "category": "history_recovery",
+      "language": "zh",
+      "mode": "lexical_or_semantic",
+      "query": "Codex app 更新后线程列表消失, 需要按 thread id 恢复历史会话",
+      "expected_top1": "memory/runbooks/codex-app-update-thread-and-config-recovery.md",
+      "expected_top3": [
+        "memory/runbooks/codex-app-update-thread-and-config-recovery.md"
+      ],
+      "expected_any": [
+        {
+          "path": "memory/runbooks/codex-app-update-thread-and-config-recovery.md"
+        }
+      ],
+      "notes": "验证 thread recovery 与 config recovery 的 canonical runbook."
+    }
+  ]
+}
