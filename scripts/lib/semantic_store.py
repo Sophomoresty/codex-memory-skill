@@ -67,6 +67,13 @@ def _ensure_schema(connection: sqlite3.Connection) -> None:
             payload_json TEXT NOT NULL,
             updated_at TEXT NOT NULL
         );
+
+        CREATE INDEX IF NOT EXISTS idx_semantic_entries_updated_at ON semantic_entries(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_checkpoints_task ON checkpoints(task);
+        CREATE INDEX IF NOT EXISTS idx_checkpoints_updated_at ON checkpoints(updated_at);
+        CREATE INDEX IF NOT EXISTS idx_promotions_task_fingerprint ON promotions(task_fingerprint);
+        CREATE INDEX IF NOT EXISTS idx_promotions_task ON promotions(task);
+        CREATE INDEX IF NOT EXISTS idx_promotions_updated_at ON promotions(updated_at);
         """
     )
 
@@ -138,11 +145,12 @@ def _migrate_legacy_checkpoints(connection: sqlite3.Connection, repo_root: Path)
 def open_store(repo_root: Path) -> Iterator[sqlite3.Connection]:
     path = store_path(repo_root.resolve())
     path.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(path)
+    connection = sqlite3.connect(path, timeout=30.0)
     try:
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA journal_mode=WAL")
         connection.execute("PRAGMA synchronous=NORMAL")
+        connection.execute("PRAGMA busy_timeout = 30000")
         _ensure_schema(connection)
         with connection:
             _migrate_legacy_semantic_index(connection, repo_root.resolve())

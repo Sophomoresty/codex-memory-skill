@@ -4,10 +4,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 import tempfile
 import textwrap
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +24,9 @@ import memory_tool as mt
 import codex_memo
 import reuse_learning as rl
 import runtime_checkpoint as rc
+
+
+BUNDLED_FIXTURE_MEMORY_ROOT = Path("examples/benchmark-fixture/memory")
 
 
 def parse_args() -> argparse.Namespace:
@@ -343,6 +348,33 @@ def _finalize_mode_stats(stats: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@contextmanager
+def resolved_benchmark_repo_root(repo_root: Path) -> Any:
+    if (repo_root / ".codex" / "memory").exists():
+        yield {
+            "effective_repo_root": repo_root,
+            "fixture_used": False,
+        }
+        return
+
+    fixture_memory_root = repo_root / BUNDLED_FIXTURE_MEMORY_ROOT
+    if not fixture_memory_root.exists():
+        yield {
+            "effective_repo_root": repo_root,
+            "fixture_used": False,
+        }
+        return
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        effective_repo_root = Path(tmpdir) / "repo"
+        target_memory_root = effective_repo_root / ".codex" / "memory"
+        shutil.copytree(fixture_memory_root, target_memory_root)
+        yield {
+            "effective_repo_root": effective_repo_root,
+            "fixture_used": True,
+        }
+
+
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
@@ -363,87 +395,92 @@ def main() -> int:
         "full": _new_mode_stats(),
     }
 
+    effective_repo_root = repo_root
+    fixture_used = False
     try:
-        for case in cases:
-            top_k = int(case.get("top_k", 3))
-            legacy = _legacy_route(repo_root, case["query"], top_k)
-            baseline = _baseline_route(repo_root, case["query"], top_k)
-            started = time.perf_counter()
-            enhanced = _enhanced_route(repo_root, case["query"], top_k)
-            elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
-            semantic_mode = str(enhanced.get("semantic_mode", "unknown")).strip() or "unknown"
-            learning_probe = None
-            if case.get("compare_learning"):
-                learning_probe_total += 1
-                without_learning = _route_without_learning(repo_root, case["query"], top_k)
-                with_learning = _enhanced_route(repo_root, case["query"], top_k)
-                before_path = str(without_learning["hits"][0]["path"]) if without_learning["hits"] else ""
-                after_path = str(with_learning["hits"][0]["path"]) if with_learning["hits"] else ""
-                before_score = float(without_learning["hits"][0]["score"]) if without_learning["hits"] else 0.0
-                after_score = float(with_learning["hits"][0]["score"]) if with_learning["hits"] else 0.0
-                with_learning_hit = _is_case_hit(with_learning["hits"], case, top_n=top_k)
-                same_top_hit = before_path == after_path and bool(before_path)
-                improved = with_learning_hit and same_top_hit and (
-                    after_score > before_score
-                    or (bool(without_learning["fallback_context"]) and not bool(with_learning["fallback_context"]))
+        with resolved_benchmark_repo_root(repo_root) as resolved:
+            effective_repo_root = Path(resolved["effective_repo_root"]).resolve()
+            fixture_used = bool(resolved["fixture_used"])
+            for case in cases:
+                top_k = int(case.get("top_k", 3))
+                legacy = _legacy_route(effective_repo_root, case["query"], top_k)
+                baseline = _baseline_route(effective_repo_root, case["query"], top_k)
+                started = time.perf_counter()
+                enhanced = _enhanced_route(effective_repo_root, case["query"], top_k)
+                elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+                semantic_mode = str(enhanced.get("semantic_mode", "unknown")).strip() or "unknown"
+                learning_probe = None
+                if case.get("compare_learning"):
+                    learning_probe_total += 1
+                    without_learning = _route_without_learning(effective_repo_root, case["query"], top_k)
+                    with_learning = _enhanced_route(effective_repo_root, case["query"], top_k)
+                    before_path = str(without_learning["hits"][0]["path"]) if without_learning["hits"] else ""
+                    after_path = str(with_learning["hits"][0]["path"]) if with_learning["hits"] else ""
+                    before_score = float(without_learning["hits"][0]["score"]) if without_learning["hits"] else 0.0
+                    after_score = float(with_learning["hits"][0]["score"]) if with_learning["hits"] else 0.0
+                    with_learning_hit = _is_case_hit(with_learning["hits"], case, top_n=top_k)
+                    same_top_hit = before_path == after_path and bool(before_path)
+                    improved = with_learning_hit and same_top_hit and (
+                        after_score > before_score
+                        or (bool(without_learning["fallback_context"]) and not bool(with_learning["fallback_context"]))
+                    )
+                    learning_probe_improved += int(improved)
+                    learning_probe = {
+                        "improved": improved,
+                        "same_top_hit": same_top_hit,
+                        "without_learning": {
+                            "top_hit": without_learning["hits"][0] if without_learning["hits"] else None,
+                            "fallback_context": without_learning["fallback_context"],
+                        },
+                        "with_learning": {
+                            "top_hit": with_learning["hits"][0] if with_learning["hits"] else None,
+                            "fallback_context": with_learning["fallback_context"],
+                        },
+                    }
+                legacy_top1_hit = _is_case_hit(legacy["hits"], case, top_n=1)
+                legacy_top3_hit = _is_case_hit(legacy["hits"], case, top_n=top_k)
+                baseline_top1_hit = _is_case_hit(baseline["hits"], case, top_n=1)
+                baseline_top3_hit = _is_case_hit(baseline["hits"], case, top_n=top_k)
+                enhanced_top1_hit = _is_case_hit(enhanced["hits"], case, top_n=1)
+                enhanced_top3_hit = _is_case_hit(enhanced["hits"], case, top_n=top_k)
+                legacy_top1 += int(legacy_top1_hit)
+                legacy_top3 += int(legacy_top3_hit)
+                baseline_top1 += int(baseline_top1_hit)
+                baseline_top3 += int(baseline_top3_hit)
+                legacy_fallback += int(bool(legacy["fallback_context"]))
+                baseline_fallback += int(bool(baseline["fallback_context"]))
+                selected_top1_hit = str(enhanced.get("execution_gate", {}).get("selected_path", "")).strip() == str(case.get("expected_top1", "")).strip()
+                _record_mode_stats(mode_breakdown["full"], enhanced, case, top_k=top_k, latency_ms=elapsed_ms)
+                results.append(
+                    {
+                        "id": case["id"],
+                        "query": case["query"],
+                        "expected_top1": case.get("expected_top1", ""),
+                        "selected_top1_hit": selected_top1_hit,
+                        "latency_ms": elapsed_ms,
+                        "legacy": {
+                            "top1_hit": legacy_top1_hit,
+                            "topk_hit": legacy_top3_hit,
+                            "fallback_context": legacy["fallback_context"],
+                            "hits": legacy["hits"],
+                        },
+                        "baseline_enhanced": {
+                            "top1_hit": baseline_top1_hit,
+                            "topk_hit": baseline_top3_hit,
+                            "fallback_context": baseline["fallback_context"],
+                            "hits": baseline["hits"],
+                        },
+                        "enhanced": {
+                            "top1_hit": enhanced_top1_hit,
+                            "topk_hit": enhanced_top3_hit,
+                            "fallback_context": enhanced["fallback_context"],
+                            "semantic_mode": semantic_mode,
+                            "selected_path": enhanced.get("execution_gate", {}).get("selected_path", ""),
+                            "hits": enhanced["hits"],
+                        },
+                        **({"learning_probe": learning_probe} if learning_probe is not None else {}),
+                    }
                 )
-                learning_probe_improved += int(improved)
-                learning_probe = {
-                    "improved": improved,
-                    "same_top_hit": same_top_hit,
-                    "without_learning": {
-                        "top_hit": without_learning["hits"][0] if without_learning["hits"] else None,
-                        "fallback_context": without_learning["fallback_context"],
-                    },
-                    "with_learning": {
-                        "top_hit": with_learning["hits"][0] if with_learning["hits"] else None,
-                        "fallback_context": with_learning["fallback_context"],
-                    },
-                }
-            legacy_top1_hit = _is_case_hit(legacy["hits"], case, top_n=1)
-            legacy_top3_hit = _is_case_hit(legacy["hits"], case, top_n=top_k)
-            baseline_top1_hit = _is_case_hit(baseline["hits"], case, top_n=1)
-            baseline_top3_hit = _is_case_hit(baseline["hits"], case, top_n=top_k)
-            enhanced_top1_hit = _is_case_hit(enhanced["hits"], case, top_n=1)
-            enhanced_top3_hit = _is_case_hit(enhanced["hits"], case, top_n=top_k)
-            legacy_top1 += int(legacy_top1_hit)
-            legacy_top3 += int(legacy_top3_hit)
-            baseline_top1 += int(baseline_top1_hit)
-            baseline_top3 += int(baseline_top3_hit)
-            legacy_fallback += int(bool(legacy["fallback_context"]))
-            baseline_fallback += int(bool(baseline["fallback_context"]))
-            selected_top1_hit = str(enhanced.get("execution_gate", {}).get("selected_path", "")).strip() == str(case.get("expected_top1", "")).strip()
-            _record_mode_stats(mode_breakdown["full"], enhanced, case, top_k=top_k, latency_ms=elapsed_ms)
-            results.append(
-                {
-                    "id": case["id"],
-                    "query": case["query"],
-                    "expected_top1": case.get("expected_top1", ""),
-                    "selected_top1_hit": selected_top1_hit,
-                    "latency_ms": elapsed_ms,
-                    "legacy": {
-                        "top1_hit": legacy_top1_hit,
-                        "topk_hit": legacy_top3_hit,
-                        "fallback_context": legacy["fallback_context"],
-                        "hits": legacy["hits"],
-                    },
-                    "baseline_enhanced": {
-                        "top1_hit": baseline_top1_hit,
-                        "topk_hit": baseline_top3_hit,
-                        "fallback_context": baseline["fallback_context"],
-                        "hits": baseline["hits"],
-                    },
-                    "enhanced": {
-                        "top1_hit": enhanced_top1_hit,
-                        "topk_hit": enhanced_top3_hit,
-                        "fallback_context": enhanced["fallback_context"],
-                        "semantic_mode": semantic_mode,
-                        "selected_path": enhanced.get("execution_gate", {}).get("selected_path", ""),
-                        "hits": enhanced["hits"],
-                    },
-                    **({"learning_probe": learning_probe} if learning_probe is not None else {}),
-                }
-            )
     finally:
         if original_fake is None:
             os.environ.pop("CODEX_MEMO_SEMANTIC_FAKE", None)
@@ -456,6 +493,8 @@ def main() -> int:
     full_summary = finalized_mode_breakdown["full"]
     payload = {
         "repo_root": str(repo_root),
+        "effective_repo_root": str(effective_repo_root),
+        "benchmark_fixture_used": fixture_used,
         "case_count": len(cases),
         "cases": results,
         "summary": {

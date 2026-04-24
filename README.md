@@ -124,17 +124,17 @@ Key properties:
 
 - **Local-first**: route and capability search run entirely on your machine.
 - **Skill-native**: the memory lifecycle is defined in a portable skill bundle, not hardcoded in the CLI.
-- **Testable**: 3 smoke tests, a benchmark suite, and a route baseline (130/130 success, top-1 100%, p50 445 ms).
+- **Testable**: a public regression suite, a bundled benchmark fixture, and a route baseline from the source system (130/130 success, top-1 100%, p50 445 ms).
 
 ## Validation
 
-Smoke tests (run in this repo):
+Public test suite (run in this repo):
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Result: **3/3 passed**.
+Result: **7/7 passed**.
 
 Baseline from the source system:
 
@@ -148,6 +148,8 @@ Benchmark replay:
 ```bash
 python3 scripts/memory_benchmark.py --repo-root . --cases examples/benchmark-cases.json
 ```
+
+If the current checkout does not already contain `.codex/memory/`, the benchmark runner automatically replays against the bundled fixture under `examples/benchmark-fixture/`.
 
 ## Repository Layout
 
@@ -171,9 +173,12 @@ skills/
 
 examples/
   benchmark-cases.json       Benchmark cases
+  benchmark-fixture/         Bundled memory fixture for benchmark replay
 
 tests/
   test_smoke.py              Smoke tests
+  test_readme_contract.py    README contract checks
+  test_regressions.py        Regression coverage for benchmark and rerank API
 ```
 
 `skills/project-memory-loop/scripts/` intentionally mirrors the root scripts. Keep them in sync when changing internal behavior.

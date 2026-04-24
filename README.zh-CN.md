@@ -150,17 +150,17 @@ codex-memo d
 
 - **本地优先**: 路由和能力检索完全在本地完成.
 - **Skill-native**: 记忆生命周期定义在可移植的 skill bundle 中, 不硬编码在 CLI 里.
-- **可测试**: 3 个冒烟测试, 一套基准测试, 路由基线 (130/130 成功, top-1 100%, p50 445 ms).
+- **可测试**: 公共回归测试, 内置 benchmark fixture, 以及来自源系统的路由基线 (130/130 成功, top-1 100%, p50 445 ms).
 
 ## 验证结果
 
-冒烟测试 (在当前仓库运行):
+公共测试集 (在当前仓库运行):
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-结果: **3/3 通过**.
+结果: **7/7 通过**.
 
 原系统本地基线:
 
@@ -174,6 +174,8 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 ```bash
 python3 scripts/memory_benchmark.py --repo-root . --cases examples/benchmark-cases.json
 ```
+
+如果当前仓库本身没有 `.codex/memory/`, benchmark 运行器会自动切到 `examples/benchmark-fixture/` 里的内置记忆样本回放.
 
 ## 仓库结构
 
@@ -197,9 +199,12 @@ skills/
 
 examples/
   benchmark-cases.json       基准测试用例
+  benchmark-fixture/         基准回放用的内置记忆样本
 
 tests/
   test_smoke.py              冒烟测试
+  test_readme_contract.py    README 合同测试
+  test_regressions.py        benchmark 与 rerank API 的回归测试
 ```
 
 `skills/project-memory-loop/scripts/` 有意保留了核心运行脚本的镜像. 修改内部逻辑时需要同步 root scripts 和 skill bundle 内的 scripts.

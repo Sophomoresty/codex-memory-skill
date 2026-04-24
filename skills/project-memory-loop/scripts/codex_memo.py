@@ -56,6 +56,8 @@ SEMANTIC_ABSTRACT_TERMS = {
     "restore",
     "recover",
     "recovery",
+    "review",
+    "audit",
     "history",
     "recall",
     "找回",

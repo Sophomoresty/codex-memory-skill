@@ -265,7 +265,7 @@ class SemanticLLMClient:
         }
 
     def rerank_route(self, payload: dict[str, Any]) -> dict[str, Any]:
-        generated = self._fake_rerank(payload)
+        generated = self.fallback_rerank(payload)
         candidate_reasons = generated.get("candidate_reasons", [])
         normalized_candidates: list[dict[str, Any]] = []
         if isinstance(candidate_reasons, list):
@@ -280,7 +280,7 @@ class SemanticLLMClient:
                     }
                 )
         return {
-            "model": "fake-semantic-client",
+            "model": str(generated.get("model", "")).strip() or "local-semantic-rerank",
             "prompt_version": RERANK_PROMPT_VERSION,
             "selected_path": str(generated.get("selected_path", "")).strip(),
             "rerank_reasons": _coerce_list(generated.get("rerank_reasons")),
