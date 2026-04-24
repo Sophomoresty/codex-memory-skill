@@ -104,6 +104,22 @@ codex-memo d
 | Memory is opaque | Memory is files you can read, edit, version-control, and delete |
 | No lifecycle governance | Include hygiene checks, stale-note detection, canonical dedup, and decision retirement |
 
+Choose Codex Memory Skill if you want:
+
+- Memory that survives across agent threads, not just within one session.
+- Route and search that run locally without a hosted API.
+- Structured notes you can read, edit, and version-control -- not a black-box vector store.
+- Built-in governance: hygiene checks, dedup, stale-note detection, decision retirement.
+
+Common alternatives and how they compare:
+
+| Approach | Limitation | What this project does instead |
+|---|---|---|
+| Chat history as memory | Lost when the thread ends; not queryable or reusable | Structured Markdown notes with typed frontmatter, indexable and routable |
+| Pure vector recall | Requires embedding model; opaque ranking; no execution gates | Lexical routing with IDF weighting, optional semantic rerank, and execution gates |
+| Hosted memory API / SaaS | Requires network; data leaves your machine; vendor lock-in | All core operations run locally with no external dependencies |
+| Loose Markdown notes, no governance | Drift, duplication, stale content, no way to verify what is current | Hygiene checks, canonical dedup, stale-note detection, decision retirement, smoke tests |
+
 Key properties:
 
 - **Local-first**: route and capability search run entirely on your machine.

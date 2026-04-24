@@ -35,6 +35,7 @@ class ReadmeContractTests(unittest.TestCase):
         for needle in [
             "Who it is for:",
             "It solves one problem:",
+            "Choose Codex Memory Skill if you want:",
             "Memory note",
             "Runbook",
             "Skill bundle",
@@ -67,6 +68,7 @@ class ReadmeContractTests(unittest.TestCase):
             "解决什么问题",
             "核心功能",
             "核心对象与关系",
+            "如果你需要以下能力, 这套更合适:",
             "记忆笔记 (Memory note)",
             "Runbook",
             "Skill bundle",
